@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using SteamAuth;
 using System.Collections.Generic;
@@ -723,6 +724,40 @@ namespace Steam_Desktop_Authenticator
                 but.Width = panelButtons.Width / totButtons;
                 but.Location = curPos;
                 curPos = new Point(curPos.X + but.Width, 0);
+            }
+        }
+
+        private async Task toolStripMenuItem1_ClickAsync(object sender, EventArgs e)
+        {
+            if (allAccounts == null || allAccounts.Length == 0)
+            {
+                MessageBox.Show("No accounts to check.", "Refresh", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            NewFile.Go();
+            int valid = 0, invalid = 0;
+
+            lblStatus.Text = "Checking accounts...";
+            try
+            {
+                foreach (var acc in allAccounts)
+                {
+                    bool ok = await NewFile.IsAccountSessionValid(acc);
+                    if (ok) valid++; else invalid++;
+                }
+            }
+            finally
+            {
+                lblStatus.Text = string.Empty;
+            }
+
+            if (invalid == 0)
+            {
+                MessageBox.Show("Everything is good", "Refresh", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show($"{valid} Valid, {invalid} Not valid", "Refresh", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }
